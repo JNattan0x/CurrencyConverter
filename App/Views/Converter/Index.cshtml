@@ -1,0 +1,80 @@
+@model Dictionary<string,string>
+@section Scripts
+{
+    <script>
+        $(document).ready(function(){
+            $('#btnMakeRequest').on('click', function(){   
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("MakeConversion")',
+                    dataType: "json",
+                    data: {
+                        originCurrency: $('#originCurrency option:selected').val(),
+                        inputValue: $('#inputValue').val(),
+                        finalCurrency: $('#finalCurrency option:selected').val()
+                    },
+                    success: function(result){
+                        var conversionResult = JSON.parse(result.value);
+                        $('#resultValue').val(conversionResult.new_amount)
+                        $('#resultList').append(`<li class="list-group-item">${conversionResult.old_currency} $${conversionResult.old_amount} <i class="bi bi-arrow-right"></i> ${conversionResult.new_currency} $${conversionResult.new_amount}</li>`);
+                    },
+                    error: function(req, status, error)
+                    {
+                        alert("Something went wrong");
+                    }
+                });
+            });
+        })
+    </script>
+}
+
+<h1 class="text-uppercase text-warning text-center border-bottom mb-5 mt-3">Currency converter</h1>
+
+<div class="row mb-4">
+    <div class="col d-flex">
+        <select class="form-select me-1" id="originCurrency">
+            @foreach (var item in Model)
+            {
+                if(item.Key == "USD")
+                {
+                    <option value="@item.Key" selected>@item.Key - @item.Value</option>
+                    continue;
+                }
+                <option value="@item.Key">@item.Key - @item.Value</option>
+            }
+        </select>
+        <div class="input-group">
+            <input class="form-control" type="text" value="0.00" id="inputValue">
+        </div>
+    </div>
+    <div class="col-1 text-center">
+        <i class="fs-3 bi bi-arrow-left-right text-dark"></i> 
+    </div>
+    <div class="col d-flex">
+        <select class="form-select me-1" id="finalCurrency">
+            @foreach (var item in Model)
+            {
+                if(item.Key == "BRL")
+                {
+                    <option value="@item.Key" selected>@item.Key - @item.Value</option>
+                    continue;
+                }
+                <option value="@item.Key">@item.Key - @item.Value</option>
+            }
+        </select>
+        <div class="input-group">
+            <input class="form-control" type="text" value="0.00" id="resultValue" disabled>
+        </div>
+     </div>
+</div>
+
+<div class="d-grid mb-3">
+    <button class="btn btn-success btn-lg" role="button" id="btnMakeRequest">Convert</button>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <span class="fs-4">Historic</span>
+    </div>
+    <ul id="resultList" class="list-group list-group-flush"></ul>
+</div>
